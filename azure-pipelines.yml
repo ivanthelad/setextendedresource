@@ -20,3 +20,18 @@ steps:
     publishJUnitResults: false
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     goals: 'package'
+- task: Docker@2
+  displayName: Login to ACR
+  inputs:
+    command: login
+    containerRegistry: "ivantheladdockerhub"
+- task: Docker@2
+  displayName: Build and Push
+  inputs:
+    command: buildAndPush
+    containerRegistry: "ivantheladdockerhub"
+    repository: "ivmckinl/setextendedresource"
+    tags: |
+      tag4
+      tag2
+      latest
