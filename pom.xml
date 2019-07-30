@@ -37,6 +37,39 @@
 			<version>5.0.0</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>io.fabric8</groupId>
+			<artifactId>kubernetes-client</artifactId>
+			<version>4.3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>io.fabric8</groupId>
+			<artifactId>kubernetes-model</artifactId>
+			<version>4.3.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.fabric8</groupId>
+			<artifactId>kubernetes-server-mock</artifactId>
+			<version>4.3.1</version>
+			<scope>test</scope>
+		</dependency>
+
+
+
+		<dependency>
+			<groupId>io.fabric8</groupId>
+			<artifactId>mockwebserver</artifactId>
+			<version>0.1.1</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun</groupId>
+					<artifactId>tools</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -59,7 +92,22 @@
 				</configuration>
 			</plugin>
 
-
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>1.2.0</version>
+				<configuration>
+					<imageName>example</imageName>
+					<dockerDirectory>docker</dockerDirectory>
+					<resources>
+						<resource>
+							<targetPath>/</targetPath>
+							<directory>${project.build.directory}</directory>
+							<include>${project.build.finalName}.jar</include>
+						</resource>
+					</resources>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>

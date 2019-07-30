@@ -1,53 +1,63 @@
 package com.example.setextendedresource;
 
-import io.kubernetes.client.ApiClient;
+import io.fabric8.kubernetes.api.model.Config;
+import io.fabric8.kubernetes.api.model.Node;
+import io.fabric8.kubernetes.api.model.NodeList;
+import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.client.ConfigBuilder;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.ApiException;
-import io.kubernetes.client.Configuration;
-import io.kubernetes.client.apis.CoreV1Api;
-import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.*;
-import io.kubernetes.client.util.ClientBuilder;
+import okhttp3.OkHttpClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.List;
 
 @SpringBootApplication
 public class SetextendedresourceApplication {
 
-	public static void main(String[] args) throws IOException, ApiException {
+	public static void main(String[] args) {
 		SpringApplication.run(SetextendedresourceApplication.class, args);
 
 
-		// loading the in-cluster config, including:
-		//   1. service-account CA
-		//   2. service-account bearer-token
-		//   3. service-account namespace
-		//   4. master endpoints(ip, port) from pre-set environment variables
-		ApiClient client = ClientBuilder.cluster().build();
+		KubernetesClient client = new DefaultKubernetesClient();
+	//	OkHttpClient client = new DefaultKubernetesClient().getHttpClient();
 
-		// set the global default api-client to the in-cluster one from above
-		Configuration.setDefaultApiClient(client);
 
-		// the CoreV1Api loads default api-client from global configuration.
-		CoreV1Api api = new CoreV1Api();
-
-		// invokes the CoreV1Api client
-		V1NodeList list2 = api.listNode(null, null, null, null, null, null, null, null, false);
-		for (V1Node item : list2.getItems()) {
-			System.out.println("mynode "+item.getMetadata().getName());
-			item.getStatus().putCapacityItem("myval" ,new Quantity(new BigDecimal(10), Quantity.Format.DECIMAL_SI));
+		List<Node> nodelist = client.nodes().list().getItems();
+		for (Node node : nodelist) {
+			System.out.println( "editing " +node.toString());
+			client.nodes().withName(node.getMetadata().getName())
+					.edit()
+						.editStatus()
+							.addToCapacity("example.com/dongle2", new Quantity("13"))
+						.and()
+					.done();
+			client.nodes().withName(node.getMetadata().getName());
+			Node mynode =  client.nodes().withName(node.getMetadata().getName()).get();
+			System.out.println("----" +mynode.getMetadata().getName() );
 
 		}
-		V1PodList list = api.listPodForAllNamespaces(null, null, null, null, null, null, null, null, false);
-		for (V1Pod item : list.getItems()) {
-			System.out.println(item.getMetadata().getName());
+
+		List<Node> nodelist2 = client.nodes().list().getItems();
+		for (Node node : nodelist2) {
+			System.out.println("giotnode " + node.getStatus().getCapacity());
+		}
+ 		while(true){
+			try {
+				Thread.sleep(100000);
+				System.out.println("sleep");
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
 		}
 	}
 
 
 
 
-}
+
